@@ -1,0 +1,262 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <link href='https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic' rel='stylesheet' type='text/css'>
+	<!-- Not use now, see style.css for h1, h2...-->
+    <!-- <link href='http://fonts.googleapis.com/css?family=Raleway:400,300,700' rel='stylesheet' type='text/css'> -->
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<!-- <link rel="stylesheet" href="assets/css/bootstrap.min.css"> -->
+	
+    <link rel="stylesheet" href="assets/css/font-awesome-4.6.1/css/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+	﻿<link type="text/css" rel="stylesheet" href="assets/lib/highlight/styles/agate.css"/>
+<script type="text/javascript" src="assets/lib/highlight/highlight.pack.js"></script>
+<script>
+	hljs.configure({tabReplace: '    '})
+	hljs.initHighlightingOnLoad();
+</script>
+	</a>
+</nav>﻿<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
+<script src="maps/leaflet-control/geojson-data.js"></script>
+<script src="maps/leaflet-control/icon-provider.js"></script>
+
+<style>
+	#map {
+		width: 100%;
+		height: 700px;
+		margin-bottom: 10px;
+		position: relative;
+	}
+	
+	.command {
+		padding: 4px 6px;
+		background: white;
+		font: 14px/16px Arial, Helvetica, sans-serif;
+		background: rgba(255,255,255,0.8);
+		box-shadow: 0 0 15px rgba(0,0,0,0.2);
+		border-radius: 5px;
+		min-width: 200px;
+	}
+</style>
+
+</div>
+<div class="container">
+	<div id="map"></div>
+
+<script type="text/javascript">
+	
+	for (var i = 0; i < geojson.length; i++) {
+		geojson[i]["type"] = "Feature";
+		geojson[i]["properties"] = geojson[i]["fields"];
+		if (geojson[i]["properties"]["url"] !== undefined && geojson[i]["properties"]["url"].indexOf("http://") < 0) {
+			geojson[i]["properties"]["url"] = 'http://' + geojson[i]["properties"]["url"];
+		}
+	}
+
+	var OpenStreetMap = L.tileLayer('http://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+		maxZoom: 18,
+		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+	});
+   
+	var map = new L.Map("map", {
+		center: new L.LatLng(47.2173, -1.5534),
+		zoom: 7,
+		layers: [OpenStreetMap],
+	});
+	
+	var cats = [];
+	for (var i = 0; i < geojson.length; i++) {
+		var cat = getCat(cats, geojson[i].properties.directSaleProductCategories);
+		if (cat === undefined) {
+			cat = {
+				"interestPoints" : createInterestPoints(),
+				"id" : "cat" + i,
+				"label" : geojson[i].properties.directSaleProductCategories
+			}
+            cats.push(cat);
+		}
+		cat["interestPoints"].addData(geojson[i]);
+	}
+    
+// TEST AJOUT pour 2nd tableau checkbox filtres "JOURS"
+//     var cats = [];
+// for (var i = 0; i < geojson.length; i++) {
+//     var cat = getCat(cats, geojson[i].properties.openingHours.usual);
+//     if (cat === undefined) {
+//         cat = {
+//             "interestPoints" : createInterestPoints(),
+//             "id" : "cat" + i,
+//             "label" : geojson[i].properties.openingHours.usual
+//         }
+//         cats.push(cat);
+//     }
+//     cat["interestPoints"].addData(geojson[i]);
+// }
+    
+	//map.fitBounds(interestPoints.getBounds());
+	
+	var command = L.control({position: 'topright'});
+	command.onAdd = function (map) {
+		var div = L.DomUtil.create('div', 'command');
+		div.innerHTML += '<div style="text-align:center;"><span style="font-size:18px;">Catégories</span><br</div>';
+		for (var i = 0; i < cats.length; i++) {
+			div.innerHTML += '<form><input id="' + cats[i]["id"] + '" type="checkbox"/>' + cats[i]["label"] + '</form>';
+		}
+		return div;
+	};
+
+    command.addTo(map);
+    
+    // TEST AJOUT pour 2nd tableau checkbox filtres "JOURS"
+    //var command = L.control({position: 'topleft'});
+	// command.onAdd = function (map) {
+	// 	var div = L.DomUtil.create('div', 'command');
+	// 	div.innerHTML += '<div style="text-align:center;"><span style="font-size:18px;">Jours</span><br</div>';
+	// 	for (var i = 0; i < cats.length; i++) {
+	// 		div.innerHTML += '<form><input id="' + cats[i]["id"] + '" type="checkbox"/>' + cats[i]["label"] + '</form>';
+	// 	}
+	// 	return div;
+	// };
+
+    // command.addTo(map);
+
+	for (var i = 0; i < cats.length; i++) {
+		document.getElementById(cats[i]["id"]).addEventListener("click", handleCommand, false);
+	}
+	
+	function handleCommand() {
+		var selectedCat;
+		for (var i = 0; i < cats.length; i++) {
+			if (cats[i]["id"] === this.id) {
+				selectedCat = cats[i];
+				break;
+			}
+		}
+		if (this.checked) {
+			selectedCat["interestPoints"].addTo(map);
+		} else {
+			map.removeLayer(selectedCat["interestPoints"]);
+		}
+	}
+	
+	function getCat(cats, cat) {
+		for (var i = 0; i < cats.length; i++) {
+			if (cats[i]["label"] === cat) {
+				return cats[i];
+			}
+		}
+		return ;
+	}
+	
+	function createInterestPoints () {
+		return new L.geoJson([], {
+			pointToLayer: function(feature, latlng) {
+				var smallIcon = L.icon({
+					iconUrl: "maps/leaflet-control/" + getIcon(feature.properties.types, feature.properties.directSaleProductCategories, feature.properties.indirectSaleProductCategories),
+					//shadowUrl: 'icon-shadow.png',
+					iconSize:     [33, 44], // taille de l'icone
+					//shadowSize:   [50, 64], // taille de l'ombre
+					iconAnchor:   [16, 44], // point de l'icone qui correspondra à la position du marker
+					//shadowAnchor: [32, 64],  // idem pour l'ombre
+					popupAnchor:  [-3, -76] // point depuis lequel la popup doit s'ouvrir relativement à l'iconAnchor
+				});
+				return L.marker(latlng, {icon: smallIcon});
+			},
+			onEachFeature: function(feature, layer) {
+				var html = '';
+				if (feature.properties.name) {
+                    html += '<b>' + feature.properties.name + '</b></br>';
+                }
+                if (feature.properties.types) {
+					html += ' ' + feature.properties.types + '</br>';
+				}
+				if (feature.properties.directSaleProductCategories) {
+                    html += 'Producteur : ' + feature.properties.directSaleProductCategories + '';
+                }
+				if (feature.properties.directSaleProductCategories2) {
+					html += "," + "&nbsp;" + '' + feature.properties.directSaleProductCategories2 + '</br>';
+				}
+				if (feature.properties.indirectSaleProductCategories) {
+					html += 'Revente : ' + feature.properties.indirectSaleProductCategories + '</br>';
+				}
+				if (feature.properties.notes) {
+                    html += '</br>' + '' + feature.properties.notes + '</br></p>';
+                }
+				if (feature.properties.types==="79f94c5a-e836-4126-bad6-6b0060b54fe4") {
+                    html += 'Heures collecte commande :'+'</br>';
+                } else {
+                    html += 'Heures d&apos;ouverture :'+'</br>';
+                }
+				if (feature.properties.openingHours.usual.monday) {
+                    html += 'Lundi :' + "&nbsp;" + "de" + "&nbsp;" + feature.properties.openingHours.usual.monday.start + "&nbsp;" + "à" + "&nbsp;" + feature.properties.openingHours.usual.monday.end + '</br>';
+				
+				// TEST AJOUT CONDITION POUR FAIRE APPARAITRE LES PICKUPHOURS
+				//  }
+				// if (feature.properties.openingHours.usual.pickupHours.saturday) {
+                //     html += 'Samedi :' + "&nbsp;" + "de" + "&nbsp;" + feature.properties.openingHours.usual.pickupHours.saturday.start + "&nbsp;" + "à" + "&nbsp;" + feature.properties.openingHours.usual.pickupHours.saturday.end + '</br>';
+                }
+				if (feature.properties.openingHours.usual.tuesday) {
+                    html += 'Mardi :' + "&nbsp;" + "de" + "&nbsp;" + feature.properties.openingHours.usual.tuesday.start + "&nbsp;" + "à" + "&nbsp;" + feature.properties.openingHours.usual.tuesday.end + '</br>';
+                }
+				if (feature.properties.openingHours.usual.wednesday) {
+                    html += 'Mercredi :' + "&nbsp;" + "de" + "&nbsp;" + feature.properties.openingHours.usual.wednesday.start + "&nbsp;" + "à" + "&nbsp;" + feature.properties.openingHours.usual.wednesday.end + '</br>';
+                }
+				if (feature.properties.openingHours.usual.thursday) {
+                    html += 'Jeudi :' + "&nbsp;" + "de" + "&nbsp;" + feature.properties.openingHours.usual.thursday.start + "&nbsp;" + "à" + "&nbsp;" + feature.properties.openingHours.usual.thursday.end + '</br>';
+                }
+				if (feature.properties.openingHours.usual.friday) {
+                    html += 'Vendredi :' + "&nbsp;" + "de" + "&nbsp;" + feature.properties.openingHours.usual.friday.start + "&nbsp;" + "à" + "&nbsp;" + feature.properties.openingHours.usual.friday.end + '</br>';
+                }
+				if (feature.properties.openingHours.usual.saturday) {
+                    html += 'Samedi :' + "&nbsp;" + "de" + "&nbsp;" + feature.properties.openingHours.usual.saturday.start + "&nbsp;" + "à" + "&nbsp;" + feature.properties.openingHours.usual.saturday.end + '</br></p>';
+                }
+				if (feature.properties.openingHours.usual.sunday) {
+                    html += 'Dimanche :' + "&nbsp;" + "de" + "&nbsp;" + feature.properties.openingHours.usual.sunday.start + "&nbsp;" + "à" + "&nbsp;" + feature.properties.openingHours.usual.sunday.end + '</br></p>';
+                }
+				if (feature.properties.lines) {
+                    html += '' + feature.properties.lines + '</br>';
+                }
+				if (feature.properties.zipcode) {
+                    html += '' + feature.properties.zipcode + "&nbsp;";
+                }
+				if (feature.properties.city) {
+                    html += '' + feature.properties.city + '</br>';
+                }
+				if (feature.properties.phone) {
+                    html += '<a href="tel:' + feature.properties.phone + '"> '+ feature.properties.phone +' </a></br>';
+                }
+				if (feature.properties.mobile) {
+                    html += '<a href="tel:' + feature.properties.mobile + '"> '+ feature.properties.mobile +' </a></br>';
+                }
+				if (feature.properties.email) {
+                    html += '<a href="mailto:' + feature.properties.email + '"> '+ feature.properties.email +' </a></br>';
+				}
+				if (feature.properties.website) {
+					html += '<a href="' + feature.properties.website + '" target="_blank">'+ feature.properties.website +'</a></br>';
+                }
+                if (feature.properties.fbPageUrl) {
+					html += '<a href="' + feature.properties.fbPageUrl + '" target="_blank">Visiter leur page Facebook</a></br>';
+                }
+				layer.bindPopup(html);
+			}
+		});
+	}
+
+</script>
+    <!--scripts loaded here-->
+    
+	<!-- Bootstrap Tooltip require tether.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+	<script id="dsq-count-scr" src="//ekseerg.disqus.com/count.js" async></script>
+    <!-- <script src="js/scripts.js"></script> -->
+</body>
+
+</html>
