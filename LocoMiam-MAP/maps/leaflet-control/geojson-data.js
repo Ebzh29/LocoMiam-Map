@@ -18,6 +18,8 @@ geojson = [{
 		"directSaleProductCategories": "Légumes",// aussi "productCategories:", lequel est celui à aller chercher? 'fd1084ef-5b33-4110-8f22-eacac7d3d005' à changer en "Légumes"
 		"directSaleProductCategories2": '',
 		"indirectSaleProductCategories": '',//pour afficher si revente autres produits
+		"indirectSaleProductCategories": '',//pour afficher si revente autres produits
+		"usualOpeningDays": "Samedi",
 		openingHours: 
 		// "[]" enlevé du code initial:
 		//  saturday: [
@@ -76,6 +78,7 @@ geojson = [{
 		"directSaleProductCategories": "Fruits",// +rajouter légumes aussi - aussi "productCategories:", lequel est celui à aller chercher? '14bfff88-7060-48c3-8029-02ace9ec5ffa' à changer en "Fruits"
 		"directSaleProductCategories2": "Légumes",
 		"indirectSaleProductCategories": "Viandes et Charcuterie" + "," + "&nbsp;" + "Œufs et Produits Laitiers"+ "," + "&nbsp;" + "Epicerie Traiteur" + "," + "&nbsp;" + "Vins et Boissons",//pour afficher si revente autres produits, changer "4182b842-0ca2-4730-9b18-0fb339d9e806" en 
+		"usualOpeningDays": "Vendredi",
 		openingHours: {
 			notes: '',
 			timezone: 'Europe/Paris',
@@ -154,6 +157,7 @@ geojson = [{
 		"directSaleProductCategories": "Légumes",// aussi "productCategories:", lequel est celui à aller chercher? 'fd1084ef-5b33-4110-8f22-eacac7d3d005' à changer en "Légumes"
 		"directSaleProductCategories2": '',
 		"indirectSaleProductCategories": '',
+		"usualOpeningDays": "Samedi",
 		openingHours: {
 			notes: '',
 			timezone: 'Europe/Paris',
